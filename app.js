@@ -99,12 +99,14 @@ function receivedMessage(event) {
 
 			case 'who are you?':
 				sendTextMessage(senderID, 'I\'m a sample chatbot, I can only repeat what you say! How boring am I?');
+				break;
 
 			case 'help':
-				sendTextMessage(senderID, 'I\'m a sample chatbot, I can only repeat what you say! How boring am I?');
+				sendTextMessage(senderID, 'Type something, don\'t be afraid!');
+				break;
 
 			default:
-				sendTextMessage(senderID, 'you said: ' + messageText);
+				sendTextMessage(senderID, messageText);
 		}
 	} else if (messageAttachments) {
 		sendTextMessage(senderID, "Message with attachment received");
