@@ -20,42 +20,51 @@ app.use(bodyParser.json());
 console.log(process.env.MESSENGER_APP_SECRET);
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = (process.env.MESSENGER_APP_SECRET) ? 
-  process.env.MESSENGER_APP_SECRET :
-  config.get('appSecret');
+	process.env.MESSENGER_APP_SECRET :
+	config.get('appSecret');
 
 console.log(process.env.MESSENGER_VALIDATION_TOKEN);
 // Arbitrary value used to validate a webhook
 const VALIDATION_TOKEN = (process.env.MESSENGER_VALIDATION_TOKEN) ?
-  (process.env.MESSENGER_VALIDATION_TOKEN) :
-  config.get('validationToken');
+	(process.env.MESSENGER_VALIDATION_TOKEN) :
+	config.get('validationToken');
 
 console.log(process.env.MESSENGER_PAGE_ACCESS_TOKEN);
 // Generate a page access token for your page from the App Dashboard
 const PAGE_ACCESS_TOKEN = (process.env.MESSENGER_PAGE_ACCESS_TOKEN) ?
-  (process.env.MESSENGER_PAGE_ACCESS_TOKEN) :
-  config.get('pageAccessToken');
+	(process.env.MESSENGER_PAGE_ACCESS_TOKEN) :
+	config.get('pageAccessToken');
 
 console.log(process.env.SERVER_URL);
-// URL where the app is running (include protocol). Used to point to scripts and 
-// assets located at this address. 
+// URL where the app is running (include protocol). Used to point to scripts and assets located at this address. 
 const SERVER_URL = (process.env.SERVER_URL) ?
-  (process.env.SERVER_URL) :
-  config.get('serverURL');
+	(process.env.SERVER_URL) :
+	config.get('serverURL');
 
 if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
-  console.error("Missing config values");
-  process.exit(1);
+	console.error("Missing config values");
+	process.exit(1);
 }
 
-app.get('/', function(req, res){
+app.get('/', function(req, res) {
 	res.render('index');
+});
+
+app.get('/webhook', function(req, res) {
+	if(req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === VALIDATION_TOKEN) {
+		console.log("Webhook validated.");
+		res.status(200).send(req.query['hub.challenge']);
+	} else {
+		console.log("Failed webhook validation. Check the validation tokens.");
+		res.sendStatus(403);
+	}
 });
 
 // Start server
 // Webhooks must be available via SSL with a certificate signed by a valid 
 // certificate authority.
 app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
+	console.log('Node app is running on port', app.get('port'));
 });
 
 module.exports = app;
