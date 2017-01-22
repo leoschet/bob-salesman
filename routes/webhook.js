@@ -5,9 +5,6 @@ const
 	bob = require("./bob-salesman.js").api,
 	router = express.Router();
 
-
-
-
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = config.get('appSecret');
 
@@ -94,10 +91,7 @@ function receivedMessage(event) {
 
 			case 'run bob':
 				// TODO: send proper callback function
-				sendTextMessage(senderID, 'Ok, now I\'ll need some time to think...');
-				sendTextMessage(senderID, 'But don\'t worry, I\'ll send you a message when I\'m finished!');
-				// var playloadUrl = bob.run(senderID, sendTextMessage);
-				sendTextMessage(senderID, playloadUrl);
+				sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
 				break;
 
 			default:
