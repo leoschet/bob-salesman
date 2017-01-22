@@ -4,7 +4,7 @@ const
 	router = express.Router();
 
 router.get('/', function(req, res) {
-	res.render('index');
+	res.status(200).send({ progress: req.body.progress + 20 });
 });
 
 // TODO: receive two callback functions (updateCallBack and finishedCallBack)
@@ -14,9 +14,28 @@ function run(requesterID, callback) {
 	var progress = 0;
 
 	while (progress < 100) {
-		progress = makeRequestToJava(requesterID, progress);
-		console.log('progress call');
-		callback(requesterID, 'progress: ' + progress);
+
+		console.log('sleep(500) + progress call');
+		sleep(500);
+		request({
+			uri: 'https://bob-salesman.herokuapp.com/bob-salesman',
+			method: 'GET',
+			json: { progress: progress }
+
+		}, function (error, response, body) {
+			console.log('Response to GET method, made to bob-salesman, received.')
+			if (!error && response.statusCode == 200) {
+				console.log('Successfully GET');
+				var curProgress = body.progress;
+
+				callback(requesterID, 'progress: ' + curProgress);
+			} else {
+				console.error("Unable to send GET.");
+				console.error(response);
+				console.error(error);
+			}
+		});
+
 	}
 
 	return 'this will be the URL for answer file';
@@ -24,7 +43,7 @@ function run(requesterID, callback) {
 
 function makeRequestToJava(requesterID, progress) {
 	// TODO: make request
-	sleep(10000);
+	sleep(5000);
 	return progress + 20;
 }
 
