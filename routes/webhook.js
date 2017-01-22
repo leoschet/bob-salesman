@@ -22,6 +22,11 @@ if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
 	process.exit(1);
 }
 
+bob.run(1, function(str, str2) {
+	console.log(str + ': ' + str2);
+});
+
+console.log('parada automatica')
 sendTextMessage(1298664906839160, 'testando');
 
 router.get('/', function(req, res) {
