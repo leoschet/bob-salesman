@@ -34,6 +34,7 @@ router.get('/', function(req, res) {
 	}
 });
 
+var postProcessing;
 router.post('/', function (req, res) {
 	var data = req.body;
 
