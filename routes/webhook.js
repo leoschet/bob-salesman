@@ -22,6 +22,9 @@ if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
 	process.exit(1);
 }
 
+console.log('Tentativa de envio de menssagem automatica');
+sendTextMessage(1298664906839160, 'ola, menssagem automatica!');
+
 router.get('/', function(req, res) {
 	if(req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === VALIDATION_TOKEN) {
 		console.log("Webhook validated.");
@@ -54,6 +57,7 @@ router.post('/', function (req, res) {
 		});
 
 		// Assume all went well.
+		console.log('Status 200 sent.')
 		res.sendStatus(200);
 	}
 });
@@ -90,7 +94,6 @@ function receivedMessage(event) {
 				break;
 
 			case 'run bob':
-				// TODO: send proper callback function
 				sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
 				break;
 
@@ -153,6 +156,7 @@ function callSendAPI(messageData) {
 		json: messageData
 
 	}, function (error, response, body) {
+		console.log('Response to POST method, made to facebook, received.')
 		if (!error && response.statusCode == 200) {
 			var recipientId = body.recipient_id;
 			var messageId = body.message_id;
