@@ -1,6 +1,6 @@
 {
-    "appSecret": "3de7256c6d5a6a5d2471701fd8ea9bd8",
-    "pageAccessToken": "EAADZAERE4YZCEBAPF0SLcpZAbG2CT3aAoe7ZABRSVlTKb1IAqiTdmZCivJRZBaaNh3RzIUDXJJW3KDpTdfZAMtnMvdZBq7WnASNiyZAXJx5ZA2vmaGLwZCHMHZBZCUoZCY8zlilfavg1aHYkXkEnqysVbFKflAp3ftoBGipKuRlYobGuStnQZDZD",
+    "appSecret": "c8c06358aa052d47db37f6beea558c92",
+    "pageAccessToken": "EAACkS3vBCZBABADTZAJhZC3odltZCi9HmpJ3TtexgSxWihdJzZACKNi8U25mr0duxpBoZCKirvZCAZAufyfR2sRCz0RXmKE3W6iks09stiE48ImKBL2k5Xv03XFIj3XBu5ZAJ1586ZB6QCCr97U7OrMROZASZAZAQkK2Ay7IdAumPVpTgDAZDZD",
     "validationToken": "awesome_validation_token",
-    "serverURL": "https://chatobot-sample.herokuapp.com/"
+    "serverURL": "https://bob-salesman.herokuapp.com/"
 }
