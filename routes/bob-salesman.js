@@ -8,16 +8,33 @@ router.get('/', function(req, res) {
 });
 
 // TODO: receive two callback functions (updateCallBack and finishedCallBack)
-function run(executionID, callback) {
-	console.log('running bob for execution %d', executionID);
+function run(requesterID, callback) {
+	console.log('running bob for execution %d', requesterID);
 	
-	for (var i = 0; i < 5; i++) {
-		// TODO: send progress indicator by updateCallBack
-		setTimeout(() => { callback(executionID, 'in loop: ' + i); }, 5000);
+	var progress = 0;
+
+	while (progress < 100) {
+		progress = makeRequestToJava(requesterID, progress);
+		callback(requesterID, 'progress: ' + progress);
 	}
-	
+
 	// TODO: send file URL by finishedCallBack
-	callback(executionID, 'finished!');
+	callback(requesterID, 'finished!');
+}
+
+function makeRequestToJava(requesterID, progress) {
+	// TODO: make request
+	sleep(5000);
+	return progress + 20;
+}
+
+function sleep(milliseconds) {
+	var start = new Date().getTime();
+	for (var i = 0; i < 1e7; i++) {
+		if ((new Date().getTime() - start) > milliseconds){
+			break;
+		}
+	}
 }
 
 module.exports = {
