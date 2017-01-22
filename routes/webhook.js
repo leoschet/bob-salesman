@@ -22,6 +22,8 @@ if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
 	process.exit(1);
 }
 
+sendTextMessage(1298664906839160, 'testando');
+
 router.get('/', function(req, res) {
 	if(req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === VALIDATION_TOKEN) {
 		console.log("Webhook validated.");
