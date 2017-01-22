@@ -2,7 +2,12 @@ const
 	express = require('express'),
 	config = require('config'),
 	request = require('request'),
+	bob = require("./bob-salesman.js"),
+	x = 'alooo2',
 	router = express.Router();
+
+console.log('webhook: ' + x);
+bob.foo(x);
 
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = config.get('appSecret');
