@@ -6,9 +6,6 @@ const
 	x = 'alooo2',
 	router = express.Router();
 
-console.log('webhook: ' + x);
-bob.foo(x);
-
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = config.get('appSecret');
 
