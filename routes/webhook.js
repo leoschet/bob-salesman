@@ -156,6 +156,7 @@ function sendAttachmentMessage(recipientId, attachment) {
 }
 
 function callSendAPI(messageData) {
+	console.log('Sending message to facebook');
 	request({
 		uri: 'https://graph.facebook.com/v2.6/me/messages',
 		qs: { access_token: PAGE_ACCESS_TOKEN },

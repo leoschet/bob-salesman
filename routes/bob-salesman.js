@@ -15,6 +15,7 @@ function run(requesterID, callback) {
 
 	while (progress < 100) {
 		progress = makeRequestToJava(requesterID, progress);
+		console.log('progress call');
 		callback(requesterID, 'progress: ' + progress);
 	}
 
