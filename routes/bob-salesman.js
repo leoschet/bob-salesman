@@ -18,8 +18,7 @@ function run(requesterID, callback) {
 		callback(requesterID, 'progress: ' + progress);
 	}
 
-	// TODO: send file URL by finishedCallBack
-	callback(requesterID, 'finished!');
+	return 'this will be the URL for answer file';
 }
 
 function makeRequestToJava(requesterID, progress) {
