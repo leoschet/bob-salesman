@@ -23,8 +23,8 @@ function run(requesterID, callback) {
 
 function makeRequestToJava(requesterID, progress) {
 	// TODO: make request
-	sleep(5000);
-	return progress + 20;
+	sleep(2000);
+	return progress + 50;
 }
 
 function sleep(milliseconds) {

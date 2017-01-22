@@ -22,9 +22,6 @@ if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
 	process.exit(1);
 }
 
-console.log('Tentativa de envio de menssagem automatica');
-sendTextMessage(1298664906839160, 'ola, menssagem automatica!');
-
 router.get('/', function(req, res) {
 	if(req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === VALIDATION_TOKEN) {
 		console.log("Webhook validated.");
@@ -49,7 +46,7 @@ router.post('/', function (req, res) {
 			// Iterate over each messaging event
 			entry.messaging.forEach(function(event) {
 				if (event.message) {
-					receivedMessage(event);
+					postProcessing = receivedMessage(event);
 				} else {
 					console.log("Webhook received unknown event: ", event);
 				}
@@ -59,6 +56,9 @@ router.post('/', function (req, res) {
 		// Assume all went well.
 		console.log('Status 200 sent.')
 		res.sendStatus(200);
+
+		console.log('Initializing post processing.');
+		postProcessing.method(postProcessing.senderID, postProcessing.callback);
 	}
 });
 	
@@ -95,6 +95,11 @@ function receivedMessage(event) {
 
 			case 'run bob':
 				sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
+				return {
+					method: bob.run,
+					senderID: senderID,
+					callback: sendTextMessage
+				}
 				break;
 
 			default:
