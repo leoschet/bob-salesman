@@ -96,7 +96,7 @@ function receivedMessage(event) {
 				// TODO: send proper callback function
 				sendTextMessage(senderID, 'Ok, now I\'ll need some time to think...');
 				sendTextMessage(senderID, 'But don\'t worry, I\'ll send you a message when I\'m finished!');
-				var playloadUrl = bob.run(senderID, sendTextMessage);
+				// var playloadUrl = bob.run(senderID, sendTextMessage);
 				sendTextMessage(senderID, playloadUrl);
 				break;
 
