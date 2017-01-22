@@ -7,7 +7,7 @@ const
 	// crypto = require('crypto'), // necessary?
 	// https = require('https'), // necessary?
 	webhook = require("./routes/webhook.js"),
-	bob = require("./routes/bob-salesman.js");
+	bob = require("./routes/bob-salesman.js").router;
 
 var app = express();
 app.set('port', process.env.PORT || 5000);

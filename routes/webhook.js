@@ -2,8 +2,7 @@ const
 	express = require('express'),
 	config = require('config'),
 	request = require('request'),
-	bob = require("./bob-salesman.js"),
-	x = 'alooo2',
+	bob = require("./bob-salesman.js").api,
 	router = express.Router();
 
 // App Secret can be retrieved from the App Dashboard
@@ -90,6 +89,13 @@ function receivedMessage(event) {
 				sendTextMessage(senderID, 'Type something, don\'t be afraid!');
 				break;
 
+			case 'run bob':
+				// TODO: send proper callback function
+				bob.run(senderID, sendTextMessage);
+				sendTextMessage(senderID, 'Ok, now I\'ll need some time to think...');
+				sendTextMessage(senderID, 'But don\'t worry, I\'ll send you a message when I\'m finished!');
+				break;
+
 			default:
 				sendTextMessage(senderID, messageText);
 		}
@@ -110,6 +116,31 @@ function sendTextMessage(recipientId, messageText) {
 		},
 		message: {
 			text: messageText
+		}
+	};
+
+	callSendAPI(messageData);
+}
+
+function formatAttachment(type, playloadUrl) {
+	var attachment = {
+		type: type,
+		payload: {
+			url: playloadUrl
+		}
+	};
+
+	return attachment;
+}
+
+function sendAttachmentMessage(recipientId, attachment) {
+	// formats the data in the request
+	var messageData = {
+		recipient: {
+			id: recipientId
+		},
+		message: {
+			attachment: attachment
 		}
 	};
 
