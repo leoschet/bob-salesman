@@ -1,48 +1,43 @@
 const
 	express = require('express'),
 	request = require('request'),
+	config = require('config'),
 	router = express.Router();
 
+const SERVER_URL = config.get('serverURL');
+
 router.get('/', function(req, res) {
-	console.log('in GET: ' + req.body.progress);
-	sleep(5000);
+	console.log('Simulate GET request received by Java Server');
+	sleep(10000);
 	res.status(200).send({ progress: req.body.progress + 20 });
 });
 
-// TODO: receive two callback functions (updateCallBack and finishedCallBack)
-function run(requesterID, callback, progress = 0) {
-	console.log('running bob for execution %d', requesterID);
+function run(requesterID, sendTextMessage, progress = 0) {
+	console.log('Running bob for requester: %d', requesterID);
 	
-	sleep(10000);
-
-	request({
-		uri: 'https://bob-salesman.herokuapp.com/bob-salesman/',
+	var options = {
+		uri: SERVER_URL + '/bob-salesman',
 		method: 'GET',
 		json: { progress: progress }
+	}
 
-	}, function (error, response, body) {
+	request(options, function (error, response, body) {
 		if (!error && response.statusCode == 200) {
+			console.log('Successfully get progress indicator from server');
 			var curProgress = body.progress;
-			console.log('Successfully GET: ' + curProgress);
 
 			if (curProgress < 100) {
-				callback(requesterID, 'progress: ' + curProgress);
-				run(requesterID, callback, curProgress);
+				sendTextMessage(requesterID, 'progress: ' + curProgress + '%');
+				run(requesterID, sendTextMessage, curProgress);
 			} else {
-				callback(requesterID, 'this will be the URL for answer file');
+				sendTextMessage(requesterID, 'this will be the URL for answer file');
 			}
 		} else {
-			console.error("Unable to send GET.");
+			console.error('Unable to send GET.');
 			console.error(response);
 			console.error(error);
 		}
 	});
-}
-
-function makeRequestToJava(requesterID, progress) {
-	// TODO: make request
-	sleep(5000);
-	return progress + 20;
 }
 
 function sleep(milliseconds) {

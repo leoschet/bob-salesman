@@ -2,7 +2,7 @@ const
 	express = require('express'),
 	config = require('config'),
 	request = require('request'),
-	bob = require("./bob-salesman.js").api,
+	bob = require('./bob-salesman.js').api,
 	router = express.Router();
 
 // App Secret can be retrieved from the App Dashboard
@@ -18,23 +18,16 @@ const PAGE_ACCESS_TOKEN = config.get('pageAccessToken');
 const SERVER_URL = config.get('serverURL');
 
 if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
-	console.error("Missing config values");
+	console.error('Missing config values.');
 	process.exit(1);
 }
 
-// bob.run(1, function(str, str2) {
-// 	console.log(str + ': ' + str2);
-// });
-
-console.log('parada automatica')
-sendTextMessage(1298664906839160, 'testando');
-
 router.get('/', function(req, res) {
 	if(req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === VALIDATION_TOKEN) {
-		console.log("Webhook validated.");
+		console.log('Webhook validated.');
 		res.status(200).send(req.query['hub.challenge']);
 	} else {
-		console.log("Failed webhook validation. Check the validation tokens.");
+		console.log('Failed webhook validation. Check the validation tokens.');
 		res.sendStatus(403);
 	}
 });
@@ -56,16 +49,16 @@ router.post('/', function (req, res) {
 				if (event.message) {
 					postProcessing = receivedMessage(event);
 				} else {
-					console.log("Webhook received unknown event: ", event);
+					console.log('Webhook received unknown event: ', event);
 				}
 			});
 		});
 
 		// Assume all went well.
-		console.log('Status 200 sent.')
+		console.log('Send status 200 as response to Facebook.')
 		res.sendStatus(200);
 
-		console.log('Initializing post processing.');
+		console.log('Initialize post processment.');
 		postProcessing.method(postProcessing.senderID, postProcessing.callback);
 	}
 });
@@ -76,7 +69,7 @@ function receivedMessage(event) {
 	var timeOfMessage = event.timestamp;
 	var message = event.message;
 
-	console.log("Received message for user %d and page %d at %d with message:", senderID, recipientID, timeOfMessage);
+	console.log('Received message for user %d and page %d at %d with message:', senderID, recipientID, timeOfMessage);
 	console.log(JSON.stringify(message));
 
 	var messageId = message.mid;
@@ -89,14 +82,6 @@ function receivedMessage(event) {
 		// If we receive a text message, check to see if it matches a keyword and send back the example.
 		// Otherwise, just echo the text we received.
 		switch (messageText) {
-			case 'generic':
-				sendGenericMessage(senderID);
-				break;
-
-			case 'who are you?':
-				sendTextMessage(senderID, 'I\'m a sample chatbot, I can only repeat what you say! How boring am I?');
-				break;
-
 			case 'help':
 				sendTextMessage(senderID, 'Type something, don\'t be afraid!');
 				break;
@@ -114,12 +99,8 @@ function receivedMessage(event) {
 				sendTextMessage(senderID, messageText);
 		}
 	} else if (messageAttachments) {
-		sendTextMessage(senderID, "Message with attachment received");
+		sendTextMessage(senderID, 'Message with attachment received');
 	}
-}
-
-function sendGenericMessage(recipientId, messageText) {
-	// To be expanded in later sections
 }
 
 function sendTextMessage(recipientId, messageText) {
@@ -136,25 +117,19 @@ function sendTextMessage(recipientId, messageText) {
 	callSendAPI(messageData);
 }
 
-function formatAttachment(type, playloadUrl) {
-	var attachment = {
-		type: type,
-		payload: {
-			url: playloadUrl
-		}
-	};
-
-	return attachment;
-}
-
-function sendAttachmentMessage(recipientId, attachment) {
+function sendFileMessage(recipientId, playloadUrl) {
 	// formats the data in the request
 	var messageData = {
 		recipient: {
 			id: recipientId
 		},
 		message: {
-			attachment: attachment
+			attachment: {
+				type: 'file',
+				payload: {
+					url: playloadUrl
+				}
+			}
 		}
 	};
 
@@ -175,9 +150,9 @@ function callSendAPI(messageData) {
 			var recipientId = body.recipient_id;
 			var messageId = body.message_id;
 
-			console.log("Successfully sent generic message with id %s to recipient %s", messageId, recipientId);
+			console.log('Successfully sent generic message with id %s to recipient %s', messageId, recipientId);
 		} else {
-			console.error("Unable to send message.");
+			console.error('Unable to send message.');
 			console.error(response);
 			console.error(error);
 		}
