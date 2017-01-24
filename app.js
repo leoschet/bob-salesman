@@ -7,7 +7,7 @@ const
 	// crypto = require('crypto'), // necessary?
 	// https = require('https'), // necessary?
 	webhook = require("./routes/webhook.js"),
-	bob = require("./routes/bob-salesman.js").router;
+	bobWebService = require("./routes/bob-salesman-ws-simulator.js");
 
 var app = express();
 app.set('port', process.env.PORT || 5000);
@@ -21,7 +21,7 @@ app.use(express.static('./public/static'));
 app.use(bodyParser.json());
 
 app.use('/webhook', webhook);
-app.use('/bob-salesman', bob);
+app.use('/bob-salesman-ws', bobWebService);
 
 app.get('/', function(req, res) {
 	res.render('index');
