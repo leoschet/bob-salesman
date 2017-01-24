@@ -5,6 +5,9 @@ const
 	bob = require('./bob-salesman.js'),
 	router = express.Router();
 
+// Current environment in use (dev, production...)
+const ENVIRONMENT = config.get('env');
+
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = config.get('appSecret');
 
@@ -17,7 +20,7 @@ const PAGE_ACCESS_TOKEN = config.get('pageAccessToken');
 // URL where the app is running (include protocol). Used to point to scripts and assets located at this address. 
 const SERVER_URL = config.get('serverURL');
 
-if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
+if (!(ENVIRONMENT && APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
 	console.error('Missing config values.');
 	process.exit(1);
 }
@@ -41,8 +44,8 @@ router.post('/', function (req, res) {
 	var data = req.body;
 
 	// Make sure this is a page subscription
-	if (data.object === 'page') {
-		
+	if (data.object === 'page' || ENVIRONMENT === 'dev') {
+		console.log(data.entry);
 		// Iterate over each entry - there may be multiple if batched
 		data.entry.forEach(function(entry) {
 			var pageID = entry.id;
