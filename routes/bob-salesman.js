@@ -15,41 +15,51 @@ function changeProgressIndicatorStatus() {
 	progressIndicatorStatus = !progressIndicatorStatus;
 }
 
-function requestRouteCalculation(requesterID, filesURLs, sendTextMessage, sendFileMessage) {
+function requestRouteCalculation(requesterID, payloads, sendTextMessage, sendFileMessage) {
 	console.log('Running bob for requester: %d', requesterID);
 	
-	filesURLs.forEach(function(fileURL) {
+	payloads.forEach(function(payload) {
 		var options = {
 			uri: SERVER_URL + '/bob-salesman-ws/requestRoute',
 			method: 'POST',
-			json: { fileURL: fileURL }
+			json: { fileURL: payload.url }
 		}
 
-		request(options, function (error, response, body) {
+		var filename = getFileNameFromURL(payload.url);
+		function sendTextMessageContainer(senderID, message, format = true) { 
+			if (format)
+				sendTextMessage(senderID, formatProgressMessagePerFile(filename, message));
+			else
+				sendTextMessage(senderID, message)
+		}
+
+		function recieveResponse(error, response, body) {
 			if (!error && response.statusCode == 200) {
 				var executionID = body.executionID;
 				console.log('Successfully requested route calculation to the server. executionID: %d', executionID);
-				followRouteCalculationProgress(requesterID, executionID, function(senderID, progress) { 
-					sendTextMessage(senderID, formatProgressMessagePerFile(fileURL, progress));
-				}, sendFileMessage);
+				
+				followRouteCalculationProgress(requesterID, executionID, sendTextMessageContainer, sendFileMessage);
+
 			} else {
 				console.error('Unable to send POST to server simulation.');
 				console.error(response);
 				console.error(error);
 			}
-		});
+		}
+
+		request(options, recieveResponse);
 	});
 }
 
 function formatProgressMessagePerFile(url, progress) {
-	return 'Route for file ' + getFileNameFromURL(url) + ' is ' + progress + ' ready.'
+	return 'Route for file ' + (url) + ' is ' + progress + ' ready.'
 }
 
 function getFileNameFromURL(url) {
 	return url.split('/').pop().split('#')[0].split('?')[0];
 }
 
-function followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage) {
+function followRouteCalculationProgress(requesterID, executionID, sendTextMessageContainer, sendFileMessage) {
 	console.log('Getting PROGRESS for execution: %d', executionID);
 	
 	var options = {
@@ -66,12 +76,12 @@ function followRouteCalculationProgress(requesterID, executionID, sendTextMessag
 
 			if (curProgress < 100) {
 				if (progressIndicatorStatus) {
-					sendTextMessage(requesterID, curProgress + '%');
+					sendTextMessageContainer(requesterID, curProgress + '%');
 				}
 
-				followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage);
+				followRouteCalculationProgress(requesterID, executionID, sendTextMessageContainer, sendFileMessage);
 			} else {
-				sendTextMessage(requesterID, 'Hey! Your request is complete, here is your results:');
+				sendTextMessageContainer(requesterID, 'Hey! Your request is complete, here is your results:', false);
 				getRouteResult(requesterID, executionID, sendFileMessage);
 			}
 		} else {
@@ -106,36 +116,6 @@ function getRouteResult(requesterID, executionID, sendFileMessage) {
 		}
 	});
 }
-
-// function run(requesterID, sendTextMessage, progress = 0) {
-// 	console.log('Running bob for requester: %d', requesterID);
-	
-// 	var options = {
-// 		uri: SERVER_URL + '/bob-salesman',
-// 		method: 'GET',
-// 		json: { progress: progress }
-// 	}
-
-// 	request(options, function (error, response, body) {
-// 		if (!error && response.statusCode == 200) {
-// 			console.log('Successfully get progress indicator from server');
-// 			var curProgress = body.progress;
-
-// 			if (curProgress < 100) {
-// 				if (progressIndicatorStatus)
-// 					sendTextMessage(requesterID, 'progress: ' + curProgress + '%');
-
-// 				run(requesterID, sendTextMessage, curProgress);
-// 			} else {
-// 				sendTextMessage(requesterID, 'this will be the URL for answer file');
-// 			}
-// 		} else {
-// 			console.error('Unable to send GET.');
-// 			console.error(response);
-// 			console.error(error);
-// 		}
-// 	});
-// }
 
 module.exports = {
 	requestRouteCalculation: requestRouteCalculation,

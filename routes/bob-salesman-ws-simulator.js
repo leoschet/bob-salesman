@@ -8,7 +8,7 @@ var executions = [];
 router.post('/requestRoute', function(req, res) {
 	console.log('Simulate POST request (CALCULATE) received by Java Server');
 
-	sleep(5000); // Simulate heavy processing
+	sleep(10000); // Simulate heavy processing
 
 	counter += 1;
 	executions[counter] = {
@@ -30,7 +30,7 @@ router.get('/getProgressIndicator', function(req, res) {
 	executions[executionID].progress += 20;
 
 	if (executions[executionID].progress >= 100) 
-		executions[executionID].result = executions[executionID].fileURL;
+		executions[executionID].result = "http://sample-env-1.24sirpvxui.us-west-2.elasticbeanstalk.com/index.html";
 
 	var json = JSON.stringify({ progress: executions[executionID].progress });
 	res.status(200).send(json);

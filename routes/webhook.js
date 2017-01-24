@@ -45,7 +45,6 @@ router.post('/', function (req, res) {
 
 	// Make sure this is a page subscription
 	if (data.object === 'page' || ENVIRONMENT === 'dev') {
-		console.log(data.entry);
 		// Iterate over each entry - there may be multiple if batched
 		data.entry.forEach(function(entry) {
 			var pageID = entry.id;
@@ -55,7 +54,6 @@ router.post('/', function (req, res) {
 			entry.messaging.forEach(function(event) {
 				if (event.message) {
 					postProcessing = receivedMessage(event);
-					console.log(postProcessing);
 				} else {
 					console.log('Webhook received unknown event: ', event);
 				}
@@ -66,12 +64,9 @@ router.post('/', function (req, res) {
 		console.log('Send status 200 as response to Facebook.')
 		res.sendStatus(200);
 
-		console.log('pre exec: ' + postProcessing);
-		console.log((typeof postProcessing !== 'undefined'));
-
 		if (postProcessing) {
 			console.log('Initialize post processment.');
-			postProcessing.method(postProcessing.senderID, postProcessing.filesURLs, postProcessing.progressCallback, postProcessing.finishCallback);
+			postProcessing.method(postProcessing.senderID, postProcessing.payloads, postProcessing.progressCallback, postProcessing.finishCallback);
 		}
 	}
 });
@@ -124,22 +119,22 @@ function receivedMessage(event) {
 		}
 
 	} else if (messageAttachments) {
-		var files = [];
+		var payloads = [];
 		messageAttachments.forEach(function(attachment) {
 			switch (attachment.type) {
 				case 'file':
-					console.log('Add file to files queue');
-					files.push(attachment.playload);
+					console.log('Add file to payloads queue');
+					payloads.push(attachment.payload);
 					break;
 			}
 		});
 		
-		if (files.length > 0) {
+		if (payloads.length > 0) {
 			sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
 			return {
 				method: bob.requestRouteCalculation,
 				senderID: senderID,
-				filesURLs: files,
+				payloads: payloads,
 				progressCallback: sendTextMessage,
 				finishCallback: sendFileMessage
 			}
