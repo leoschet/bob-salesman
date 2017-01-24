@@ -15,26 +15,38 @@ function changeProgressIndicatorStatus() {
 	progressIndicatorStatus = !progressIndicatorStatus;
 }
 
-function requestRouteCalculation(requesterID, fileURL, sendTextMessage, sendFileMessage) {
+function requestRouteCalculation(requesterID, filesURLs, sendTextMessage, sendFileMessage) {
 	console.log('Running bob for requester: %d', requesterID);
 	
-	var options = {
-		uri: SERVER_URL + '/bob-salesman-ws/requestRoute',
-		method: 'POST',
-		json: { fileURL: fileURL }
-	}
-
-	request(options, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			var executionID = body.executionID;
-			console.log('Successfully requested route calculation to the server. executionID: %d', executionID);
-			followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage);
-		} else {
-			console.error('Unable to send POST to server simulation.');
-			console.error(response);
-			console.error(error);
+	filesURLs.forEach(function(fileURL) {
+		var options = {
+			uri: SERVER_URL + '/bob-salesman-ws/requestRoute',
+			method: 'POST',
+			json: { fileURL: fileURL }
 		}
+
+		request(options, function (error, response, body) {
+			if (!error && response.statusCode == 200) {
+				var executionID = body.executionID;
+				console.log('Successfully requested route calculation to the server. executionID: %d', executionID);
+				followRouteCalculationProgress(requesterID, executionID, function(senderID, progress) { 
+					sendTextMessage(senderID, formatProgressMessagePerFile(fileURL, progress));
+				}, sendFileMessage);
+			} else {
+				console.error('Unable to send POST to server simulation.');
+				console.error(response);
+				console.error(error);
+			}
+		});
 	});
+}
+
+function formatProgressMessagePerFile(url, progress) {
+	return 'Route for file ' + getFileNameFromURL(url) + ' is ' + progress + ' ready.'
+}
+
+function getFileName(url) {
+	return url.split('/').pop().split('#')[0].split('?')[0];
 }
 
 function followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage) {
@@ -54,7 +66,7 @@ function followRouteCalculationProgress(requesterID, executionID, sendTextMessag
 
 			if (curProgress < 100) {
 				if (progressIndicatorStatus) {
-					sendTextMessage(requesterID, 'progress: ' + curProgress + '%');
+					sendTextMessage(requesterID, curProgress + '%');
 				}
 
 				followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage);
