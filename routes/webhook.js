@@ -61,7 +61,7 @@ router.post('/', function (req, res) {
 
 		console.log('pre exec: ' + postProcessing);
 		console.log((typeof postProcessing !== 'undefined'));
-		
+
 		if (postProcessing) {
 			console.log('Initialize post processment.');
 			postProcessing.method(postProcessing.senderID, postProcessing.filesURLs, postProcessing.progressCallback, postProcessing.finishCallback);
@@ -121,11 +121,13 @@ function receivedMessage(event) {
 		messageAttachments.forEach(function(attachment) {
 			switch (attachment.type) {
 				case 'file':
+					console.log('Add file to files queue');
 					files.push(attachment.playload);
 					break;
 			}
 		});
 		
+		console.log(files);
 		if (files.lenght > 0) {
 			sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
 			return {
