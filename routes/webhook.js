@@ -22,6 +22,10 @@ if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
 	process.exit(1);
 }
 
+// bob.requestRouteCalculation(1, ["https://cdn.fbsbx.com/v/t59.2708-21/16258786_1235915826492900_11060180737327104_n.txt/aaaa.txt?oh=ca91ed6743347746a2ac67af99cdf5c4&oe=5889D278"], function(id, msg) { console.log(msg) }, function(id, msg) { console.log(msg) });
+// console.log('jogo continua');
+
+
 router.get('/', function(req, res) {
 	if(req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === VALIDATION_TOKEN) {
 		console.log('Webhook validated.');
