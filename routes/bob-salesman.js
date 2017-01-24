@@ -52,6 +52,7 @@ function requestRouteCalculation(requesterID, payloads, sendTextMessage, sendFil
 
 			} else {
 				console.error('Unable to send POST to server simulation.');
+				sendTextMessageContainer(requesterID, 'Unfortunately I\'m very tired right now, I can\'t think about your request... You should try it again later, but I can still try others requests!!', false);
 				// console.error(response);
 				// console.error(error);
 			}
@@ -98,6 +99,7 @@ function followRouteCalculationProgress(requesterID, executionID, sendTextMessag
 			}
 		} else {
 			console.error('Unable to send GET (PROGRESS).');
+			sendTextMessageContainer(requesterID, 'Unfortunately I\'m very tired right now, I can\'t think about your request... You should try it again later, but I can still try others requests!!', false);
 			// console.error(response);
 			// console.error(error);
 		}
