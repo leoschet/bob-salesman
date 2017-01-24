@@ -159,6 +159,7 @@ function sendTextMessage(recipientId, messageText) {
 }
 
 function sendFileMessage(recipientId, playloadUrl) {
+	console.log('AQUIIIIIIIIIII' + playloadUrl)
 	// formats the data in the request
 	var messageData = {
 		recipient: {
@@ -194,7 +195,7 @@ function callSendAPI(messageData) {
 			console.log('Successfully sent generic message with id %s to recipient %s', messageId, recipientId);
 		} else {
 			console.error('Unable to send message.');
-			console.error(response);
+			// console.error(response);
 			console.error(error);
 		}
 	});

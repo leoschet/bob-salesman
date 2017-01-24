@@ -6,6 +6,7 @@ const
 const SERVER_URL = config.get('serverURL');
 
 var progressIndicatorStatus = true;
+var lastSentProgress = 0;
 
 function getProgressIndicatorStatus() {
 	return progressIndicatorStatus;
@@ -15,14 +16,22 @@ function changeProgressIndicatorStatus() {
 	progressIndicatorStatus = !progressIndicatorStatus;
 }
 
+function getLastSentProgress() {
+	return lastSentProgress;
+}
+
+function setLastSentProgress(newProgress) {
+	lastSentProgress = newProgress;
+}
+
 function requestRouteCalculation(requesterID, payloads, sendTextMessage, sendFileMessage) {
 	console.log('Running bob for requester: %d', requesterID);
 	
 	payloads.forEach(function(payload) {
 		var options = {
-			uri: SERVER_URL + '/bob-salesman-ws/requestRoute',
+			uri: SERVER_URL + '/requestRoute',
 			method: 'POST',
-			json: { fileURL: payload.url }
+			body: payload.url
 		}
 
 		var filename = getFileNameFromURL(payload.url);
@@ -35,15 +44,16 @@ function requestRouteCalculation(requesterID, payloads, sendTextMessage, sendFil
 
 		function recieveResponse(error, response, body) {
 			if (!error && response.statusCode == 200) {
-				var executionID = body.executionID;
+				var bodyObj = JSON.parse(body);
+				var executionID = bodyObj.executionID;
 				console.log('Successfully requested route calculation to the server. executionID: %d', executionID);
 				
 				followRouteCalculationProgress(requesterID, executionID, sendTextMessageContainer, sendFileMessage);
 
 			} else {
 				console.error('Unable to send POST to server simulation.');
-				console.error(response);
-				console.error(error);
+				// console.error(response);
+				// console.error(error);
 			}
 		}
 
@@ -63,59 +73,63 @@ function followRouteCalculationProgress(requesterID, executionID, sendTextMessag
 	console.log('Getting PROGRESS for execution: %d', executionID);
 	
 	var options = {
-		uri: SERVER_URL + '/bob-salesman-ws/getProgressIndicator',
-		qs: { executionID: executionID },
+		uri: SERVER_URL + '/getProgress',
+		qs: { key: executionID },
 		method: 'GET',
 	}
 
-	request(options, function (error, response, body) {
+	function recieveResponse(error, response, body) {
 		if (!error && response.statusCode == 200) {
 			console.log('Successfully get progress indicator from server');
 			var bodyObj = JSON.parse(body);
-			var curProgress = bodyObj.progress;
+			var curProgress = (bodyObj.progress)*100;
 
 			if (curProgress < 100) {
-				if (progressIndicatorStatus) {
+				if (progressIndicatorStatus && getLastSentProgress() !== curProgress) {
 					sendTextMessageContainer(requesterID, curProgress + '%');
+					setLastSentProgress(curProgress);
 				}
 
 				followRouteCalculationProgress(requesterID, executionID, sendTextMessageContainer, sendFileMessage);
 			} else {
+				console.log('End of algorithm\'s execution.')
 				sendTextMessageContainer(requesterID, 'Hey! Your request is complete, here is your results:', false);
-				getRouteResult(requesterID, executionID, sendFileMessage);
+				sendFileMessage(requesterID, SERVER_URL + '/download?key=' + executionID);
 			}
 		} else {
 			console.error('Unable to send GET (PROGRESS).');
-			console.error(response);
-			console.error(error);
+			// console.error(response);
+			// console.error(error);
 		}
-	});
-}
-
-function getRouteResult(requesterID, executionID, sendFileMessage) {
-	console.log('Getting RESULTS for execution: %d', executionID);
-	
-	var options = {
-		uri: SERVER_URL + '/bob-salesman-ws/getResult',
-		qs: { executionID: executionID },
-		method: 'GET',
 	}
 
-	request(options, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-
-			console.log('Successfully get progress indicator from server');
-			var bodyObj = JSON.parse(body);
-			var resultURL = bodyObj.resultURL;
-			sendFileMessage(requesterID, resultURL);
-
-		} else {
-			console.error('Unable to send GET (RESULT).');
-			console.error(response);
-			console.error(error);
-		}
-	});
+	request(options, recieveResponse);
 }
+
+// function getRouteResult(requesterID, executionID, sendFileMessage) {
+// 	console.log('Getting RESULTS for execution: %d', executionID);
+	
+// 	var options = {
+// 		uri: SERVER_URL + '/download',
+// 		qs: { key: executionID },
+// 		method: 'GET',
+// 	}
+
+// 	request(options, function (error, response, body) {
+// 		if (!error && response.statusCode == 200) {
+
+// 			console.log('Successfully get progress indicator from server');
+// 			var bodyObj = JSON.parse(body);
+// 			var resultURL = bodyObj.resultURL;
+// 			sendFileMessage(requesterID, resultURL);
+
+// 		} else {
+// 			console.error('Unable to send GET (RESULT).');
+// 			console.error(response);
+// 			console.error(error);
+// 		}
+// 	});
+// }
 
 module.exports = {
 	requestRouteCalculation: requestRouteCalculation,

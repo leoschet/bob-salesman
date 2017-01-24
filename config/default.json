@@ -3,5 +3,5 @@
     "appSecret": "c8c06358aa052d47db37f6beea558c92",
     "pageAccessToken": "EAACkS3vBCZBABADTZAJhZC3odltZCi9HmpJ3TtexgSxWihdJzZACKNi8U25mr0duxpBoZCKirvZCAZAufyfR2sRCz0RXmKE3W6iks09stiE48ImKBL2k5Xv03XFIj3XBu5ZAJ1586ZB6QCCr97U7OrMROZASZAZAQkK2Ay7IdAumPVpTgDAZDZD",
     "validationToken": "awesome_validation_token",
-    "serverURL": "http://localhost:5000"
+    "serverURL": "http://localhost:8080/bob-salesman/ws"
 }
