@@ -30,7 +30,7 @@ router.get('/getProgressIndicator', function(req, res) {
 	executions[executionID].progress += 20;
 
 	if (executions[executionID].progress >= 100) 
-		executions[executionID].result = "http://sample-env-1.24sirpvxui.us-west-2.elasticbeanstalk.com/index.html";
+		executions[executionID].result = "https://raw.githubusercontent.com/leoschet/bob-salesman/master/routes/bob-salesman.js";
 
 	var json = JSON.stringify({ progress: executions[executionID].progress });
 	res.status(200).send(json);
