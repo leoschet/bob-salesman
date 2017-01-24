@@ -127,8 +127,7 @@ function receivedMessage(event) {
 			}
 		});
 		
-		console.log(files);
-		if (files.lenght > 0) {
+		if (files.length > 0) {
 			sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
 			return {
 				method: bob.requestRouteCalculation,
