@@ -45,7 +45,7 @@ function formatProgressMessagePerFile(url, progress) {
 	return 'Route for file ' + getFileNameFromURL(url) + ' is ' + progress + ' ready.'
 }
 
-function getFileName(url) {
+function getFileNameFromURL(url) {
 	return url.split('/').pop().split('#')[0].split('?')[0];
 }
 
