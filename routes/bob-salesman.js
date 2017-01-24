@@ -1,58 +1,132 @@
 const
 	express = require('express'),
 	request = require('request'),
-	config = require('config'),
-	router = express.Router();
+	config = require('config');
 
 const SERVER_URL = config.get('serverURL');
 
-router.get('/', function(req, res) {
-	console.log('Simulate GET request received by Java Server');
-	sleep(10000);
-	res.status(200).send({ progress: req.body.progress + 20 });
-});
+var progressIndicatorStatus = true;
 
-function run(requesterID, sendTextMessage, progress = 0) {
+function getProgressIndicatorStatus() {
+	return progressIndicatorStatus;
+}
+
+function changeProgressIndicatorStatus() {
+	progressIndicatorStatus = !progressIndicatorStatus;
+}
+
+function requestRouteCalculation(requesterID, fileURL, sendTextMessage, sendFileMessage) {
 	console.log('Running bob for requester: %d', requesterID);
 	
 	var options = {
-		uri: SERVER_URL + '/bob-salesman',
-		method: 'GET',
-		json: { progress: progress }
+		uri: SERVER_URL + '/bob-salesman-ws/requestRoute',
+		method: 'POST',
+		json: { fileURL: fileURL }
 	}
 
 	request(options, function (error, response, body) {
 		if (!error && response.statusCode == 200) {
-			console.log('Successfully get progress indicator from server');
-			var curProgress = body.progress;
-
-			if (curProgress < 100) {
-				sendTextMessage(requesterID, 'progress: ' + curProgress + '%');
-				run(requesterID, sendTextMessage, curProgress);
-			} else {
-				sendTextMessage(requesterID, 'this will be the URL for answer file');
-			}
+			var executionID = body.executionID;
+			console.log('Successfully requested route calculation to the server. executionID: %d', executionID);
+			followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage);
 		} else {
-			console.error('Unable to send GET.');
+			console.error('Unable to send POST to server simulation.');
 			console.error(response);
 			console.error(error);
 		}
 	});
 }
 
-function sleep(milliseconds) {
-	var start = new Date().getTime();
-	for (var i = 0; i < 1e7; i++) {
-		if ((new Date().getTime() - start) > milliseconds){
-			break;
-		}
+function followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage) {
+	console.log('Getting PROGRESS for execution: %d', executionID);
+	
+	var options = {
+		uri: SERVER_URL + '/bob-salesman-ws/getProgressIndicator',
+		qs: { executionID: executionID },
+		method: 'GET',
 	}
+
+	request(options, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			console.log('Successfully get progress indicator from server');
+			var bodyObj = JSON.parse(body);
+			var curProgress = bodyObj.progress;
+
+			if (curProgress < 100) {
+				if (progressIndicatorStatus) {
+					sendTextMessage(requesterID, 'progress: ' + curProgress + '%');
+				}
+
+				followRouteCalculationProgress(requesterID, executionID, sendTextMessage, sendFileMessage);
+			} else {
+				sendTextMessage(requesterID, 'Hey! Your request is complete, here is your results:');
+				getRouteResult(requesterID, executionID, sendFileMessage);
+			}
+		} else {
+			console.error('Unable to send GET (PROGRESS).');
+			console.error(response);
+			console.error(error);
+		}
+	});
 }
 
+function getRouteResult(requesterID, executionID, sendFileMessage) {
+	console.log('Getting RESULTS for execution: %d', executionID);
+	
+	var options = {
+		uri: SERVER_URL + '/bob-salesman-ws/getResult',
+		qs: { executionID: executionID },
+		method: 'GET',
+	}
+
+	request(options, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+
+			console.log('Successfully get progress indicator from server');
+			var bodyObj = JSON.parse(body);
+			var resultURL = bodyObj.resultURL;
+			sendFileMessage(requesterID, resultURL);
+
+		} else {
+			console.error('Unable to send GET (RESULT).');
+			console.error(response);
+			console.error(error);
+		}
+	});
+}
+
+// function run(requesterID, sendTextMessage, progress = 0) {
+// 	console.log('Running bob for requester: %d', requesterID);
+	
+// 	var options = {
+// 		uri: SERVER_URL + '/bob-salesman',
+// 		method: 'GET',
+// 		json: { progress: progress }
+// 	}
+
+// 	request(options, function (error, response, body) {
+// 		if (!error && response.statusCode == 200) {
+// 			console.log('Successfully get progress indicator from server');
+// 			var curProgress = body.progress;
+
+// 			if (curProgress < 100) {
+// 				if (progressIndicatorStatus)
+// 					sendTextMessage(requesterID, 'progress: ' + curProgress + '%');
+
+// 				run(requesterID, sendTextMessage, curProgress);
+// 			} else {
+// 				sendTextMessage(requesterID, 'this will be the URL for answer file');
+// 			}
+// 		} else {
+// 			console.error('Unable to send GET.');
+// 			console.error(response);
+// 			console.error(error);
+// 		}
+// 	});
+// }
+
 module.exports = {
-	api: {
-		run: run
-	},
-	router: router
+	requestRouteCalculation: requestRouteCalculation,
+	changeProgressIndicatorStatus: changeProgressIndicatorStatus,
+	getProgressIndicatorStatus: getProgressIndicatorStatus
 };
-// module.exports = router;

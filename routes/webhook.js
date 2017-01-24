@@ -2,7 +2,7 @@ const
 	express = require('express'),
 	config = require('config'),
 	request = require('request'),
-	bob = require('./bob-salesman.js').api,
+	bob = require('./bob-salesman.js'),
 	router = express.Router();
 
 // App Secret can be retrieved from the App Dashboard
@@ -58,8 +58,10 @@ router.post('/', function (req, res) {
 		console.log('Send status 200 as response to Facebook.')
 		res.sendStatus(200);
 
-		console.log('Initialize post processment.');
-		postProcessing.method(postProcessing.senderID, postProcessing.callback);
+		if (postProcessing) {
+			console.log('Initialize post processment.');
+			postProcessing.method(postProcessing.senderID, postProcessing.fileURL, postProcessing.progressCallback, postProcessing.finishCallback);
+		}
 	}
 });
 	
@@ -83,24 +85,53 @@ function receivedMessage(event) {
 		// Otherwise, just echo the text we received.
 		switch (messageText) {
 			case 'help':
-				sendTextMessage(senderID, 'Type something, don\'t be afraid!');
+				sendTextMessage(senderID, 'TODO');
 				break;
 
-			case 'run bob':
-				sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
-				return {
-					method: bob.run,
-					senderID: senderID,
-					callback: sendTextMessage
+			case 'disable progress indicator':
+				if (!bob.getProgressIndicatorStatus()) {
+					sendTextMessage(senderID, 'It is already disabled.');
+				} else {
+					bob.changeProgressIndicatorStatus();
+					sendTextMessage(senderID, 'Now it is disabled, to activate it back say: \'activate progress indicator\'.');
 				}
+					
+				break;
+
+			case 'activate progress indicator':
+				if (bob.getProgressIndicatorStatus()) {
+					sendTextMessage(senderID, 'It is already activated.');
+				} else {
+					bob.changeProgressIndicatorStatus();
+					sendTextMessage(senderID, 'Now it is disabled, to activate it back say: \'disable progress indicator\'.');
+				}
+					
 				break;
 
 			default:
 				sendTextMessage(senderID, messageText);
 		}
+
 	} else if (messageAttachments) {
-		console.log(messageAttachments);
-		sendTextMessage(senderID, 'Message with attachment received');
+
+		sendTextMessage(senderID, 'Message with attachments received');
+
+		messageAttachments.forEach(function(attachment) {
+			switch (attachment.type) {
+				case 'file':
+					sendTextMessage(senderID, 'Ok, now I\'ll need some time to think... But don\'t worry, I\'ll send you a message when I\'m finished!');
+					return {
+						method: bob.requestRouteCalculation,
+						senderID: senderID,
+						fileURL: attachment.playload,
+						progressCallback: sendTextMessage,
+						finishCallback: sendFileMessage
+					}
+
+				default:
+					sendTextMessage(senderID, 'I can only process attachments of type file... Sorry, bro');
+			}
+		});
 	}
 }
 
@@ -126,7 +157,7 @@ function sendFileMessage(recipientId, playloadUrl) {
 		},
 		message: {
 			attachment: {
-				type: 'file',
+				type: "file",
 				payload: {
 					url: playloadUrl
 				}
