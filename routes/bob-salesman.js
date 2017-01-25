@@ -27,38 +27,47 @@ function setLastSentProgress(newProgress) {
 function requestRouteCalculation(requesterID, payloads, sendTextMessage, sendFileMessage) {
 	console.log('Running bob for requester: %d', requesterID);
 	
+
 	payloads.forEach(function(payload) {
-		var options = {
-			uri: SERVER_URL + '/requestRoute',
-			method: 'POST',
-			body: payload.url
-		}
 
 		var filename = getFileNameFromURL(payload.url);
-		function sendTextMessageContainer(senderID, message, format = true) { 
-			if (format)
-				sendTextMessage(senderID, formatProgressMessagePerFile(filename, message));
-			else
-				sendTextMessage(senderID, message)
-		}
 
-		function recieveResponse(error, response, body) {
-			if (!error && response.statusCode == 200) {
-				var bodyObj = JSON.parse(body);
-				var executionID = bodyObj.executionID;
-				console.log('Successfully requested route calculation to the server. executionID: %d', executionID);
-				
-				followRouteCalculationProgress(requesterID, executionID, sendTextMessageContainer, sendFileMessage);
+		request.get(payload.url).on('response', function(res) { console.log('Get file data: ' + res.statusCode); }).on('data', function(dataBuf){
 
-			} else {
-				console.error('Unable to send POST to server simulation.');
-				sendTextMessageContainer(requesterID, 'Unfortunately I\'m very tired right now, I can\'t think about your request... You should try it again later, but I can still try others requests!!', false);
-				// console.error(response);
-				// console.error(error);
+			var data = dataBuf.toString();
+			
+			function sendTextMessageContainer(senderID, message, format = true) { 
+				if (format)
+					sendTextMessage(senderID, formatProgressMessagePerFile(filename, message));
+				else
+					sendTextMessage(senderID, message)
 			}
-		}
 
-		request(options, recieveResponse);
+			function recieveResponse(error, response, body) {
+				if (!error && response.statusCode == 200) {
+					var bodyObj = JSON.parse(body);
+					var executionID = bodyObj.executionID;
+					console.log('Successfully requested route calculation to the server. executionID: %d', executionID);
+					
+					followRouteCalculationProgress(requesterID, executionID, sendTextMessageContainer, sendFileMessage);
+
+				} else {
+					console.error('Unable to send POST to server simulation.');
+					sendTextMessageContainer(requesterID, 'Unfortunately I\'m very tired right now, I can\'t think about your request... You should try it again later, but I can still try others requests!!', false);
+					// console.error(response);
+					// console.error(error);
+				}
+			}
+
+			var options = {
+				uri: SERVER_URL + '/requestRoute',
+				method: 'POST',
+				body: data
+			}
+
+			request(options, recieveResponse);
+
+		});
 	});
 }
 
